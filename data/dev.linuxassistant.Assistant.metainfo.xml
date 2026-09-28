@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>dev.linuxassistant.Assistant</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <name>Assistant</name>
+  <summary>Chat with a model that can see your windows and act on your desktop</summary>
+  <description>
+    <p>
+      A desktop assistant that works on any Linux distribution and desktop
+      environment. It reads your window list, takes screenshots, and proposes
+      changes for you to approve before anything happens.
+    </p>
+    <p>Window control is available on Hyprland, Sway, niri, KDE Plasma, and on X11.</p>
+  </description>
+  <launchable type="desktop-id">dev.linuxassistant.Assistant.desktop</launchable>
+  <url type="homepage">https://github.com/davidmessenger123/linux-assistant</url>
+  <provides>
+    <binary>python3</binary>
+  </provides>
+</component>

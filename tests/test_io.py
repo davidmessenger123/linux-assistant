@@ -416,3 +416,89 @@ class NoAbsolutePaths(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
+
+
+class Doctor(unittest.TestCase):
+    """The diagnosis has to be specific, because "it doesn't work" is useless."""
+
+    def test_a_healthy_machine_reports_no_blockers(self):
+        from assistant import doctor
+
+        checks, blocking = doctor.report()
+        self.assertFalse(blocking, "\n".join(f"{n}: {t}" for n, s, t in checks if s == doctor.FAIL))
+
+    def test_a_missing_interpreter_version_is_caught(self):
+        from collections import namedtuple
+
+        from assistant import doctor
+
+        old = namedtuple("version_info", "major minor micro releaselevel serial")
+        with mock.patch.object(doctor.sys, "version_info", old(3, 8, 0, "final", 0)):
+            checks = {name: status for name, status, _t in doctor.report()[0]}
+        self.assertEqual(checks["python"], doctor.FAIL)
+
+    def test_the_supported_interpreter_passes(self):
+        from assistant import doctor
+
+        checks = {name: status for name, status, _t in doctor.report()[0]}
+        self.assertEqual(checks["python"], doctor.OK)
+
+    def test_no_window_backend_on_wayland_names_the_real_problem(self):
+        """GNOME and Plasma have no window-control API, and saying so saves hours."""
+        from assistant import doctor
+
+        with mock.patch.dict("os.environ", {"XDG_SESSION_TYPE": "wayland"}):
+            with mock.patch("assistant.backends.detect", return_value=(
+                __import__("assistant.backends", fromlist=["build"]).build("virtual"),
+                ["none found"],
+            )):
+                checks = {name: (status, text) for name, status, text in doctor.report()[0]}
+        status, text = checks["desktop backend"]
+        self.assertEqual(status, doctor.FAIL)
+        self.assertIn("GNOME and Plasma", text)
+        self.assertIn("X11", text)
+
+    def test_a_working_backend_lists_what_it_cannot_do(self):
+        from assistant import doctor
+
+        with mock.patch("assistant.backends.detect", return_value=(
+            __import__("assistant.backends", fromlist=["build"]).build("x11"), [],
+        )):
+            checks = {name: (status, text) for name, status, text in doctor.report()[0]}
+        status, text = checks["desktop backend"]
+        self.assertEqual(status, doctor.OK)
+        self.assertIn("x11", text)
+        self.assertIn("Not available here", text)
+
+    def test_an_unwritable_uinput_is_a_warning_not_a_failure(self):
+        from assistant import doctor
+
+        with mock.patch("os.path.exists", return_value=True):
+            with mock.patch("os.access", return_value=False):
+                status, text = doctor._uinput()
+        self.assertEqual(status, doctor.WARN)
+        self.assertIn("udev", text)
+
+    def test_a_missing_uinput_explains_how_to_load_the_module(self):
+        from assistant import doctor
+
+        with mock.patch("os.path.exists", return_value=False):
+            status, text = doctor._uinput()
+        self.assertEqual(status, doctor.WARN)
+        self.assertIn("modprobe uinput", text)
+
+    def test_the_kwin_probe_rejects_a_machine_without_kwin(self):
+        """A loose check would claim every non-KDE desktop."""
+        from assistant import proc
+        from assistant.backends.kwin import KWinBackend
+
+        backend = KWinBackend()
+        with mock.patch.object(proc, "have", return_value=True):
+            with mock.patch.dict("os.environ", {"XDG_SESSION_BUS_ADDRESS": "unix:path=/run/user/1000/bus"}):
+                with mock.patch.object(proc, "run", return_value=""):
+                    self.assertFalse(backend.available())
+                listing = "interface org.kde.KWin.Scripting {\n  loadScript(in s path, out s id);\n}"
+                with mock.patch.object(proc, "run", return_value=listing):
+                    self.assertTrue(backend.available())
+                with mock.patch.object(proc, "run", return_value="interface org.kde.KWin {\n}"):
+                    self.assertFalse(backend.available())

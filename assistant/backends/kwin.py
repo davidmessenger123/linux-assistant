@@ -152,22 +152,31 @@ class KWinBackend(DesktopBackend):
         os.makedirs(self.workdir, mode=0o700, exist_ok=True)
 
     def available(self) -> bool:
+        """Whether KWin is on the session bus and offers its scripting interface.
+
+        The check has to be for the Scripting interface specifically. On a
+        machine not running Plasma there is no org.kde.KWin at all, and a loose
+        check would either match nothing useful or, worse, treat the empty reply
+        from a failed call as a success and claim every other desktop.
+        """
         if not proc.have("gdbus"):
             return False
         if not os.environ.get("DBUS_SESSION_BUS_ADDRESS") and not os.environ.get("XDG_RUNTIME_DIR"):
             return False
         try:
-            output = proc.run(
+            listing = proc.run(
                 [
                     "gdbus", "introspect", "--session", "--dest", SERVICE,
-                    "--object-path", OBJECT, "--only-properties",
+                    "--object-path", OBJECT,
                 ],
                 timeout=5,
                 check=False,
             )
         except (proc.ToolMissing, OSError):
             return False
-        return "KWin" in output or output.strip() == ""
+        if not listing.strip():
+            return False
+        return f"interface {SCRIPTING}" in listing and "loadScript" in listing
 
     def _call(self, method: str, argument: str) -> str:
         output = proc.run(

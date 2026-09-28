@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=Assistant
+GenericName=Desktop Assistant
+Comment=Chat with a model that can see your windows and act on your desktop
+Exec=python3 -m assistant
+Icon=dev.linuxassistant.Assistant
+Terminal=false
+Categories=Utility;Development;Network;
+Keywords=ai;assistant;chat;automation;
+StartupNotify=true
