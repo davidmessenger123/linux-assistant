@@ -10,16 +10,28 @@ it is and remains the right choice on Omarchy. This one is for everyone else.
 
 ## Status
 
-The desktop-control and IO layers are done and tested. The interface is not
-started, so nothing is runnable end to end yet.
+It runs. `python3 -m assistant` opens a window that talks to a model, sees your
+windows, and asks before it changes anything.
 
 | | |
 |---|---|
-| Working, verified live | Hyprland window control, portal screenshots, uinput input |
+| Working, verified live on Hyprland | window control, portal screenshots, uinput input, the GTK window, a real turn through opencode |
 | Implemented, fixture-tested | Sway, niri, KWin, X11 |
-| Not started | GTK interface |
+| Not done | packaging, the in-app settings panel, recipes, memory, dictation |
 
-See [Roadmap](#roadmap).
+The window itself is a normal GTK4 window, so it behaves the same on any
+desktop. See [Roadmap](#roadmap).
+
+## Running it
+
+```sh
+git clone https://github.com/davidmessenger123/linux-assistant
+cd linux-assistant
+python3 -m assistant --model opencode/space-bunny-free
+```
+
+Shortcuts: <kbd>Ctrl</kbd>+<kbd>Return</kbd> send, <kbd>Ctrl</kbd>+<kbd>W</kbd>
+list what the current backend can and cannot do.
 
 ## What is different
 
@@ -121,11 +133,28 @@ and has never run against a live Plasma session.
 1. **Done** — `DesktopBackend` abstraction, six backends, planner.
 2. **Done** — portal screenshots, uinput input, `uwsm-app` and
    `omarchy reminder` replaced with GIO desktop files and `systemd-run`.
-3. **Next** — a GTK4/libadwaita interface. This is the part that makes GNOME and
-   KDE possible at all: the original draws a full-screen overlay through
+3. **Done** — the GTK4/libadwaita window. This is what makes GNOME and KDE
+   possible at all: the original draws a full-screen overlay through
    `wlr-layer-shell`, which those desktops do not implement.
-4. **Later** — collapse the TypeScript tool bridge into one local server, which
+4. **Next** — an `assistant-doctor`, a `.desktop` file, and a flatpak manifest,
+   so installing it is one command rather than a clone and a Python path.
+5. **Later** — collapse the TypeScript tool bridge into one local server, which
    removes Node and Bun from the runtime.
+
+## Known gaps
+
+- **The KWin backend has never been run against Plasma.** It is written against
+  the KWin 6 scripting API and its parsing is fixture-tested, but nothing has
+  confirmed the live behaviour. Sway and niri are in the same position, minus
+  being completely unrunnable, because neither is installed here.
+- **No window control on GNOME or Plasma under Wayland.** Neither implements
+  any window-control API, and neither has a wlr layer shell. Under those
+  sessions the backend comes out as `virtual` and the assistant says so; log in
+  on X11 and the `x11` backend takes over. Screenshots, typing and clicking all
+  still work, because the portal and uinput do not care what drew the screen.
+- **The ported features are a subset.** Recipes, memory, dictation, the action
+  log and the image backends live in the original and have not been ported yet.
+  The layer they would sit on is here and tested.
 
 ## Licence
 
