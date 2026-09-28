@@ -10,16 +10,16 @@ it is and remains the right choice on Omarchy. This one is for everyone else.
 
 ## Status
 
-Milestone 1 is done: the window-control layer is compositor-neutral and tested.
+The desktop-control and IO layers are done and tested. The interface is not
+started, so nothing is runnable end to end yet.
 
 | | |
 |---|---|
-| Working | Hyprland, verified live against a running session |
+| Working, verified live | Hyprland window control, portal screenshots, uinput input |
 | Implemented, fixture-tested | Sway, niri, KWin, X11 |
-| Not started | GTK interface, portable screen capture, portable input |
+| Not started | GTK interface |
 
-There is no interface yet, so nothing is runnable end to end. See
-[Roadmap](#roadmap).
+See [Roadmap](#roadmap).
 
 ## What is different
 
@@ -33,21 +33,41 @@ operation lives in one file. Here, that file is split in two:
   means and produces a proposal the user approves. It is the only part the
   model talks to, and it is identical for every compositor.
 
-Three consequences worth knowing about:
+### Screenshots
+
+The original shipped a hand-built grim binary, fell back to `/usr/bin/grim` on
+any other architecture, and worked around Hyprland's screencopy stalling by
+switching every other monitor off around each capture. That is a compositor bug
+treated as an application concern, and it meant no capture at all on anything
+that was not Hyprland on x86-64.
+
+Capture now goes through `xdg-desktop-portal`, which is one API for GNOME,
+Plasma and every wlroots compositor, with each desktop's own tool behind it and
+X11 tools last. Nothing ever changes monitor state. Frames arriving as raw RGBA
+are written by `assistant/io/png.py`, because GStreamer has no PNG encoder
+installed on plenty of systems and requiring Pillow just to save a screenshot
+would undo the point.
+
+### Typing and clicking
+
+`wtype` only works on wlroots compositors, so typing was impossible on GNOME
+and Plasma even though nothing else about them was a problem. Both typing and
+clicking are now done by writing to `/dev/uinput` directly, which the kernel
+treats identically whatever compositor is running. `wtype`, `ydotool` and
+`xdotool` remain as fallbacks for when `/dev/uinput` is not writable, which is
+the common case without a udev rule.
+
+### Two more things
 
 **Capabilities are checked before a plan is offered.** Each backend declares what
 it can do, and the planner refuses to build a proposal the backend cannot
-deliver. On X11, for example, there is no standard way to float a window, so
-`float` and the `tile` built on top of it are reported as unavailable instead of
-failing after the user has already approved them.
+deliver. On X11 there is no standard way to float a window, so `float` and the
+`tile` built on top of it are reported unavailable instead of failing after the
+user has approved them.
 
 **Hyprland's dialect problem is fixed.** The original only spoke the Lua
 dispatcher and broke on compositor upgrades. Both that and plain
 `hyprctl dispatch` are supported, probed once at runtime.
-
-**Tiling no longer leaves a strip.** The original sized columns as
-`width // n - gap`, which does not fit `n` columns and `n-1` gaps into the work
-area, so an 8px gap was left at one edge. Fixed, with a test.
 
 ## Backends
 
@@ -69,13 +89,19 @@ Force a backend with `ASSISTANT_BACKEND`, or `--backend` on the command line.
 
 ## Requirements
 
-Python 3.9 or newer, `opencode`, and a backend's dependencies from the table
-above. No Node, no Bun, no Quickshell, no compositor-specific packages.
+Python 3.9 or newer, `opencode`, PyGObject, and a backend's dependencies from
+the table above. No Node, no Bun, no Quickshell, no compositor-specific
+packages.
+
+For clicking, either run as root or grant write access to `/dev/uinput`;
+`assistant-doctor` explains the three options.
 
 ```sh
 git clone https://github.com/davidmessenger123/linux-assistant
 cd linux-assistant
-python3 -m assistant.windows plan list      # read-only, safe to run
+python3 -m assistant.windows plan list          # read-only, safe to run
+python3 -m assistant.io.capture /tmp/shot.png    # takes a screenshot
+python3 -m assistant.io.launch search terminal
 ```
 
 ## Tests
@@ -84,18 +110,18 @@ python3 -m assistant.windows plan list      # read-only, safe to run
 python3 -m unittest discover -s tests
 ```
 
-Standard library only, so they run anywhere. The Hyprland fixture is a real
-captured session; the others are hand-written from each compositor's documented
-output, which means they check parsing and shape rather than that those
-compositors are installed. The KWin backend is the least proven of the set and
-has never run against a live Plasma session.
+Standard library only, so they run anywhere. 115 tests. The Hyprland fixture is
+a real captured session; the others are hand-written from each compositor's
+documented output, which means they check parsing and shape rather than that
+those compositors are installed. The KWin backend is the least proven of the set
+and has never run against a live Plasma session.
 
 ## Roadmap
 
-1. **Done** — `DesktopBackend` abstraction, six backends, planner, tests.
-2. **Next** — screen capture through `xdg-desktop-portal`, input through uinput,
-   and removal of the remaining `/usr/bin` assumptions.
-3. **Then** — a GTK4/libadwaita interface. This is the part that makes GNOME and
+1. **Done** — `DesktopBackend` abstraction, six backends, planner.
+2. **Done** — portal screenshots, uinput input, `uwsm-app` and
+   `omarchy reminder` replaced with GIO desktop files and `systemd-run`.
+3. **Next** — a GTK4/libadwaita interface. This is the part that makes GNOME and
    KDE possible at all: the original draws a full-screen overlay through
    `wlr-layer-shell`, which those desktops do not implement.
 4. **Later** — collapse the TypeScript tool bridge into one local server, which
