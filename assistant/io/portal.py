@@ -13,6 +13,7 @@ inside the function that uses them.
 
 from __future__ import annotations
 
+import json
 import shutil
 import urllib.parse
 
@@ -95,22 +96,63 @@ def _nearest(streams, x: int, y: int):
 
 
 def _cursor_position() -> tuple[int, int] | None:
+    """Where the pointer is, in logical desktop coordinates.
+
+    The compositors report this in different shapes, so each is parsed on its
+    own rather than through a shared path. A backend that cannot say where the
+    pointer is simply means 'auto' falls back to the first output.
+    """
     from .. import proc
 
-    for command, args, pick in (
-        ("hyprctl", ["hyprctl", "cursorpos"], None),
+    for command, parse in (
+        ("hyprctl", _parse_hyprland_cursor),
+        ("swaymsg", _parse_sway_cursor),
+        ("niri", _parse_niri_cursor),
     ):
         if not proc.have(command):
             continue
         try:
-            raw = proc.run(args, timeout=5, check=False)
+            raw = proc.run([command, "cursorpos"] if command == "hyprctl" else
+                           [command, "msg", "--json", "pointer"] if command == "niri" else
+                           [command, "-t", "get_seats"], timeout=5, check=False)
         except (proc.ToolMissing, OSError):
             continue
-        parts = raw.replace(",", " ").split()
-        numbers = [p for p in parts if p.isdigit()]
-        if len(numbers) >= 2:
-            return int(numbers[0]), int(numbers[1])
+        found = parse(raw)
+        if found is not None:
+            return found
     return None
+
+
+def _numbers(text: str) -> list[int]:
+    return [int(token) for token in text.replace(",", " ").split() if token.lstrip("-").isdigit()]
+
+
+def _parse_hyprland_cursor(raw: str) -> tuple[int, int] | None:
+    numbers = _numbers(raw)
+    return (numbers[0], numbers[1]) if len(numbers) >= 2 else None
+
+
+def _parse_sway_cursor(raw: str) -> tuple[int, int] | None:
+    try:
+        data = json.loads(raw or "null")
+    except json.JSONDecodeError:
+        return None
+    for seat in (data or {}).get("default_seat") or []:
+        pointer = seat.get("pointer") or {}
+        x, y = pointer.get("x"), pointer.get("y")
+        if isinstance(x, int) and isinstance(y, int):
+            return x, y
+    return None
+
+
+def _parse_niri_cursor(raw: str) -> tuple[int, int] | None:
+    try:
+        data = json.loads(raw or "null")
+    except json.JSONDecodeError:
+        return None
+    location = (data or {}).get("Logical") or (data or {}).get("logical") or {}
+    x, y = location.get("x"), location.get("y")
+    return (x, y) if isinstance(x, int) and isinstance(y, int) else None
 
 
 def grab_screenshot(path: str) -> dict:

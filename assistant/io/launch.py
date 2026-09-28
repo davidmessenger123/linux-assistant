@@ -122,11 +122,42 @@ def find(query: str) -> dict:
     return matches[0]
 
 
-def launch(query: str, prefer: str = "") -> dict:
-    """Start an application by name."""
-    entry = find(query) if not query.endswith(".desktop") else {
-        "id": query, "name": query, "path": query, "generic": "", "keywords": ""
-    }
+def _is_application_entry(path: str) -> bool:
+    """Whether a path looks like a real installed application entry.
+
+    Checked again at launch time rather than trusted from the caller, because
+    this is the last point before a program starts.
+    """
+    if not isinstance(path, str) or not path or "\x00" in path:
+        return False
+    if not path.startswith("/") or ".." in path or not path.endswith(".desktop"):
+        return False
+    parts = path.split("/")
+    if len(parts) < 3:
+        return False
+    return any(part == "applications" for part in parts[:-1])
+
+
+def launch(query: str, prefer: str = "", source: str = "") -> dict:
+    """Start an application by name, or by a desktop entry path already vetted.
+
+    ``source`` exists for callers that validated a path themselves and must not
+    have it re-derived from a name. A model-supplied name is never treated as a
+    path: it is looked up in the application directories, so a name like
+    ``../../etc/passwd`` finds nothing instead of launching something.
+    """
+    if source:
+        if not _is_application_entry(source):
+            raise LaunchError(f"{source} is not an application entry, so it was not started.")
+        entry = {
+            "id": os.path.splitext(os.path.basename(source))[0],
+            "name": os.path.splitext(os.path.basename(source))[0],
+            "path": source,
+            "generic": "",
+            "keywords": "",
+        }
+    else:
+        entry = find(query)
     order = [prefer] if prefer else ["gio", "gtk-launch", "direct"]
 
     problems: list[str] = []
