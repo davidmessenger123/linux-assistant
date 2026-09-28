@@ -1,0 +1,6 @@
+Screen 0: minimum 320 x 200, current 4480 x 1440, maximum 16384 x 16384
+DP-2 connected primary 2560x1440+0+0 (normal left inverted right x axis y axis) 2560x1440 60.00*+
+   2560x1440     59.93
+HDMI-A-1 connected 1920x1080+2560+0 (normal left inverted right x axis y axis) 1920x1080 60.00*+
+   1920x1080     60.00
+DP-3 disconnected (normal left inverted right x axis y axis)

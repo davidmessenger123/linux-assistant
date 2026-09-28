@@ -1,0 +1,10 @@
+{
+  "workspaces": [
+    {
+      "id": 1,
+      "output": "eDP-1",
+      "is_active": true,
+      "is_focused": true
+    }
+  ]
+}

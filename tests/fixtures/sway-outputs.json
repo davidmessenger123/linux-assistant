@@ -1,0 +1,28 @@
+[
+  {
+    "id": 1,
+    "name": "DP-2",
+    "active": true,
+    "focused": true,
+    "scale": 1,
+    "rect": {
+      "x": 0,
+      "y": 0,
+      "width": 2560,
+      "height": 1440
+    }
+  },
+  {
+    "id": 2,
+    "name": "HDMI-A-1",
+    "active": true,
+    "focused": false,
+    "scale": 2,
+    "rect": {
+      "x": 2560,
+      "y": 0,
+      "width": 1920,
+      "height": 1080
+    }
+  }
+]

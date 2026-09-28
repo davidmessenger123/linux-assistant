@@ -1,0 +1,95 @@
+{
+  "id": 1,
+  "name": "root",
+  "type": "root",
+  "rect": {
+    "x": 0,
+    "y": 0,
+    "width": 2560,
+    "height": 1440
+  },
+  "nodes": [
+    {
+      "id": 2,
+      "name": "DP-2",
+      "type": "output",
+      "rect": {
+        "x": 0,
+        "y": 0,
+        "width": 2560,
+        "height": 1440
+      },
+      "nodes": [
+        {
+          "id": 3,
+          "name": "1",
+          "type": "workspace",
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "width": 2560,
+            "height": 1400
+          },
+          "nodes": [
+            {
+              "id": 10,
+              "type": "con",
+              "app_id": "Alacritty",
+              "pid": 111,
+              "focused": true,
+              "is_floating": false,
+              "fullscreen_mode": 0,
+              "window_properties": {
+                "title": "~/src - zsh"
+              },
+              "rect": {
+                "x": 0,
+                "y": 0,
+                "width": 1280,
+                "height": 1400
+              }
+            },
+            {
+              "id": 11,
+              "type": "con",
+              "app_id": "brave",
+              "pid": 222,
+              "focused": false,
+              "is_floating": false,
+              "fullscreen_mode": 0,
+              "window_properties": {
+                "title": "Hacker News"
+              },
+              "rect": {
+                "x": 1280,
+                "y": 0,
+                "width": 1280,
+                "height": 1400
+              }
+            }
+          ]
+        }
+      ],
+      "floating_nodes": [
+        {
+          "id": 20,
+          "type": "floating_con",
+          "app_id": "Ghostty",
+          "pid": 333,
+          "focused": false,
+          "is_floating": true,
+          "window_properties": {
+            "title": "floating term"
+          },
+          "rect": {
+            "x": 400,
+            "y": 300,
+            "width": 800,
+            "height": 500
+          }
+        }
+      ]
+    }
+  ],
+  "floating_nodes": []
+}

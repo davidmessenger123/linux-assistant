@@ -1,0 +1,64 @@
+{
+  "ok": true,
+  "windows": [
+    {
+      "id": "12345",
+      "app_id": "konsole",
+      "title": "~/src \u2014 zsh",
+      "workspace": "1",
+      "monitor": "DP-2",
+      "x": 0,
+      "y": 0,
+      "width": 1280,
+      "height": 1400,
+      "floating": false,
+      "focused": true,
+      "minimized": false
+    },
+    {
+      "id": "12346",
+      "app_id": "firefox",
+      "title": "Hacker News",
+      "workspace": "1",
+      "monitor": "DP-2",
+      "x": 1280,
+      "y": 0,
+      "width": 1280,
+      "height": 1400,
+      "floating": false,
+      "focused": false,
+      "minimized": false
+    }
+  ],
+  "monitors": [
+    {
+      "id": "DP-2",
+      "name": "DP-2",
+      "x": 0,
+      "y": 0,
+      "width": 2560,
+      "height": 1440,
+      "scale": 1,
+      "focused": true
+    },
+    {
+      "id": "HDMI-A-1",
+      "name": "HDMI-A-1",
+      "x": 2560,
+      "y": 0,
+      "width": 1920,
+      "height": 1080,
+      "scale": 1,
+      "focused": false
+    }
+  ],
+  "workspaces": [
+    {
+      "name": "1",
+      "monitor": "",
+      "active": true,
+      "count": 2,
+      "special": false
+    }
+  ]
+}

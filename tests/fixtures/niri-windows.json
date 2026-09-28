@@ -1,0 +1,40 @@
+[
+  {
+    "id": 1,
+    "title": "~/src \u2014 zsh",
+    "app_id": "Alacritty",
+    "is_focused": true,
+    "is_floating": false,
+    "workspace_id": 1,
+    "output": "eDP-1",
+    "layout": {
+      "pos_in_scrolling_layout": {
+        "x": 0,
+        "y": 0
+      },
+      "tile_size": {
+        "width": 1280,
+        "height": 1400
+      }
+    }
+  },
+  {
+    "id": 2,
+    "title": "Hacker News",
+    "app_id": "brave",
+    "is_focused": false,
+    "is_floating": false,
+    "workspace_id": 1,
+    "output": "eDP-1",
+    "layout": {
+      "pos_in_scrolling_layout": {
+        "x": 1280,
+        "y": 0
+      },
+      "tile_size": {
+        "width": 1280,
+        "height": 1400
+      }
+    }
+  }
+]

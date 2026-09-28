@@ -1,0 +1,16 @@
+[
+  {
+    "id": 2,
+    "name": "1",
+    "output": "DP-2",
+    "focused": true,
+    "visible_for_all_workspaces": false
+  },
+  {
+    "id": 3,
+    "name": "code",
+    "output": "HDMI-A-1",
+    "focused": false,
+    "visible_for_all_workspaces": false
+  }
+]
